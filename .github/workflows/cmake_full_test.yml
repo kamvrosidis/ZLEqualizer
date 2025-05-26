@@ -42,9 +42,11 @@ jobs:
             cmake_extra_flags: -DZL_JUCE_FORMATS="AU"
           - name: Windows
             os: windows-latest
-            vcvars64_path: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+            # Change from vcvars64 to vcvars32 for 32-bit builds
+            vcvars32_path: '"C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars32.bat"'
             pluginval-binary: ./pluginval.exe
-            cmake_extra_flags: -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3"
+            # Add the -A Win32 flag to target a 32-bit build
+            cmake_extra_flags: -A Win32 -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DKFR_ENABLE_MULTIARCH=OFF -DZL_JUCE_FORMATS="VST3"
 
     steps:
       - name: Set up Clang (Linux)
@@ -120,8 +122,8 @@ jobs:
         if: runner.os == 'Windows'
         shell: cmd
         run: |
-          call ${{ matrix.vcvars64_path }}
-          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE}} ${{ matrix.cmake_extra_flags }} .
+          call ${{ matrix.vcvars32_path }}
+          cmake -B ${{ env.BUILD_DIR }} -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} ${{ matrix.cmake_extra_flags }} .
           cmake --build ${{ env.BUILD_DIR }} --config ${{ env.BUILD_TYPE }}
 
       - name: Test
